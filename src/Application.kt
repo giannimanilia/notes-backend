@@ -1,13 +1,10 @@
 package com.gmaniliapp
 
+import com.gmaniliapp.route.userRoute
 import io.ktor.application.*
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
+import io.ktor.features.*
 import io.ktor.gson.*
-import io.ktor.response.*
-import io.ktor.request.*
-import io.ktor.routing.Routing
+import io.ktor.routing.*
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -16,7 +13,9 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.module(testing: Boolean = false) {
     install(DefaultHeaders)
     install(CallLogging)
-    install(Routing)
+    install(Routing) {
+        userRoute()
+    }
     install(ContentNegotiation) {
         gson {
             setPrettyPrinting()
