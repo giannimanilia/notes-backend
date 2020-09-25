@@ -1,5 +1,6 @@
 package com.gmaniliapp
 
+import com.gmaniliapp.route.authRoute
 import com.gmaniliapp.route.userRoute
 import io.ktor.application.*
 import io.ktor.features.*
@@ -15,6 +16,7 @@ fun Application.module(testing: Boolean = false) {
     install(CallLogging)
     install(Routing) {
         userRoute()
+        authRoute()
     }
     install(ContentNegotiation) {
         gson {
