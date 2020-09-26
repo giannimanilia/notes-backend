@@ -37,7 +37,7 @@ suspend fun checkIfUserExists(email: String): Boolean {
 /**
  * Get notes given an email
  */
-suspend fun selectNotesByEmail(email: String): List<Note> {
+suspend fun selectNotesByOwner(email: String): List<Note> {
     return notesCollection.find(Note::owners contains email).toList()
 }
 
@@ -65,13 +65,13 @@ suspend fun updateNote(note: Note): Boolean {
 /**
  * Update note's owners
  */
-suspend fun updateNoteOwners(noteId: String, owners: List<String>): Boolean {
-    return notesCollection.updateOne(Note::id eq noteId, setValue(Note::owners, owners)).wasAcknowledged()
+suspend fun updateNoteOwners(id: String, owners: List<String>): Boolean {
+    return notesCollection.updateOne(Note::id eq id, setValue(Note::owners, owners)).wasAcknowledged()
 }
 
 /**
  * Delete a note
  */
-suspend fun deleteNote(noteId: String): Boolean {
-    return notesCollection.deleteOneById(noteId).wasAcknowledged()
+suspend fun deleteNote(id: String): Boolean {
+    return notesCollection.deleteOneById(id).wasAcknowledged()
 }
