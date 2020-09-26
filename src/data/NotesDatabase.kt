@@ -1,8 +1,8 @@
 package com.gmaniliapp.data
 
+import com.gmaniliapp.data.collection.Note
 import com.gmaniliapp.data.collection.User
-import com.gmaniliapp.data.response.StandardResponse
-import io.ktor.http.*
+import org.litote.kmongo.contains
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.KMongo
@@ -10,6 +10,7 @@ import org.litote.kmongo.reactivestreams.KMongo
 private val client = KMongo.createClient().coroutine
 private val database = client.getDatabase("NotesDatabase")
 private val userCollection = database.getCollection<User>()
+private val notesCollection = database.getCollection<Note>()
 
 /**
  * Insert an user
@@ -30,4 +31,11 @@ suspend fun selectUserByEmail(email: String): User? {
  */
 suspend fun checkIfUserExists(email: String): Boolean {
     return selectUserByEmail(email) != null
+}
+
+/**
+ * Get notes given an email
+ */
+suspend fun selectNotesByEmail(email: String): List<Note> {
+    return notesCollection.find(Note::owners contains email).toList()
 }
