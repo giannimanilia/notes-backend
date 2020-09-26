@@ -5,6 +5,7 @@ import com.gmaniliapp.data.collection.User
 import org.litote.kmongo.contains
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.eq
+import org.litote.kmongo.insertOne
 import org.litote.kmongo.reactivestreams.KMongo
 
 private val client = KMongo.createClient().coroutine
@@ -38,4 +39,25 @@ suspend fun checkIfUserExists(email: String): Boolean {
  */
 suspend fun selectNotesByEmail(email: String): List<Note> {
     return notesCollection.find(Note::owners contains email).toList()
+}
+
+/**
+ * Select a note given an id
+ */
+suspend fun selectNoteById(id: String): Note? {
+    return notesCollection.findOneById(id)
+}
+
+/**
+ * Insert a note
+ */
+suspend fun insertNote(note: Note): Boolean {
+    return notesCollection.insertOne(note).wasAcknowledged()
+}
+
+/**
+ * Update a note
+ */
+suspend fun updateNote(note: Note): Boolean {
+    return notesCollection.updateOneById(note.id, note).wasAcknowledged()
 }

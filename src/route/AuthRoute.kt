@@ -4,7 +4,7 @@ import com.gmaniliapp.data.request.AccountRequest
 import com.gmaniliapp.service.login
 import io.ktor.application.*
 import io.ktor.features.ContentTransformationException
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -15,7 +15,7 @@ fun Route.authRoute() {
             val request = try {
                 call.receive<AccountRequest>()
             } catch (exception: ContentTransformationException) {
-                call.respond(BadRequest, "Bad request")
+                call.respond(HttpStatusCode.BadRequest, "Bad request")
                 return@post
             }
 
