@@ -21,7 +21,6 @@ fun Route.authRoute() {
 
             val response = login(request.email, request.password)
             call.respond(response.code, response.message)
-            return@post
         }
     }
 }

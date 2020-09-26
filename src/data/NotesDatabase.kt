@@ -5,8 +5,8 @@ import com.gmaniliapp.data.collection.User
 import org.litote.kmongo.contains
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.eq
-import org.litote.kmongo.insertOne
 import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.setValue
 
 private val client = KMongo.createClient().coroutine
 private val database = client.getDatabase("NotesDatabase")
@@ -60,4 +60,18 @@ suspend fun insertNote(note: Note): Boolean {
  */
 suspend fun updateNote(note: Note): Boolean {
     return notesCollection.updateOneById(note.id, note).wasAcknowledged()
+}
+
+/**
+ * Update note's owners
+ */
+suspend fun updateNoteOwners(noteId: String, owners: List<String>): Boolean {
+    return notesCollection.updateOne(Note::id eq noteId, setValue(Note::owners, owners)).wasAcknowledged()
+}
+
+/**
+ * Delete a note
+ */
+suspend fun deleteNote(noteId: String): Boolean {
+    return notesCollection.deleteOneById(noteId).wasAcknowledged()
 }
