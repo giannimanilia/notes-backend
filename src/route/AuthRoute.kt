@@ -51,12 +51,12 @@ fun Route.authRoute() {
             val request = try {
                 call.receive<AccountRequest>()
             } catch (exception: ContentTransformationException) {
-                call.respond(HttpStatusCode.BadRequest, "Bad request")
+                call.respond(HttpStatusCode.BadRequest, StandardResponse(HttpStatusCode.BadRequest, "Bad request"))
                 return@post
             }
 
-            val response = login(request.email, request.password)
-            call.respond(response.code, response.message)
+            val standardResponse = login(request.email, request.password)
+            call.respond(standardResponse.code, standardResponse)
         }
     }
 }
