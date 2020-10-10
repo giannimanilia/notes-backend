@@ -76,7 +76,16 @@ fun Route.notesRoute() {
                         )
                     }
                 } else {
-                    call.respond(HttpStatusCode.NotFound, "No note founded with id = ${request.id}")
+                    note = request
+                    if (note.owners.contains(email)) {
+                        if (updateNote(note)) {
+                            call.respond(HttpStatusCode.OK, note)
+                        } else {
+                            call.respond(HttpStatusCode.InternalServerError, "Error updating note")
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.Forbidden, "User is not an owner of the note")
+                    }
                 }
             }
         }
