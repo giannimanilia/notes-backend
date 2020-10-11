@@ -78,10 +78,10 @@ fun Route.notesRoute() {
                 } else {
                     note = request
                     if (note.owners.contains(email)) {
-                        if (updateNote(note)) {
+                        if (insertNote(note)) {
                             call.respond(HttpStatusCode.OK, note)
                         } else {
-                            call.respond(HttpStatusCode.InternalServerError, "Error updating note")
+                            call.respond(HttpStatusCode.InternalServerError, "Error inserting note")
                         }
                     } else {
                         call.respond(HttpStatusCode.Forbidden, "User is not an owner of the note")
