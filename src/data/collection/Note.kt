@@ -8,8 +8,9 @@ data class Note(
     val id: String = ObjectId().toString(),
     val title: String,
     val content: String,
-    val date: Long,
     val owners: List<String>,
     val color: String,
-    val deleted: Boolean
+    val creationDate: Long,
+    var updateDate: Long,
+    var deleted: Boolean
 )

@@ -59,6 +59,7 @@ suspend fun insertNote(note: Note): Boolean {
  * Update a note
  */
 suspend fun updateNote(note: Note): Boolean {
+    note.updateDate = System.currentTimeMillis()
     return notesCollection.updateOneById(note.id, note).wasAcknowledged()
 }
 
