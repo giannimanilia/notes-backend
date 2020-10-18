@@ -4,6 +4,7 @@ import com.gmaniliapp.data.*
 import com.gmaniliapp.data.collection.Note
 import com.gmaniliapp.data.request.AddOwnerRequest
 import com.gmaniliapp.data.request.DeleteNoteRequest
+import com.gmaniliapp.data.response.StandardResponse
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.ContentTransformationException
@@ -114,7 +115,8 @@ fun Route.notesRoute() {
                                 }
                             } else {
                                 call.respond(
-                                    HttpStatusCode.NotAcceptable, "User is already an owner of the note with id = $noteId"
+                                    HttpStatusCode.NotAcceptable,
+                                    "User is already an owner of the note with id = $noteId"
                                 )
                             }
                         } else {
@@ -126,6 +128,49 @@ fun Route.notesRoute() {
                 } else {
                     call.respond(HttpStatusCode.BadRequest, "Owner is missing")
                 }
+            }
+        }
+    }
+    route("/rest/v1/notes/sync") {
+        authenticate {
+            put {
+                val noteId = call.parameters["noteId"]!!
+                val email = call.principal<UserIdPrincipal>()!!.name
+                var notes = try {
+                    call.receive<List<Note>>()
+                } catch (exception: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest, "Bad request")
+                    return@put
+                }
+
+                /*
+                if (notes.isNotEmpty()) {
+                    notes.forEach { note ->
+                        val dbNote = selectNoteById(noteId)
+                        if (dbNote != null) {
+                            if (dbNote.owners.contains(email)) {
+                                if (note.deleted) {
+                                    deleteNote(dbNote, email)
+                                } else {
+                                    updateNote(note)
+                                }
+                            } else {
+                                // TODO: User is not an owner of the note
+                            }
+                        } else {
+                            if (!note.deleted) {
+                                if (note.owners.contains(email)) {
+                                    insertNote(note)
+                                } else {
+                                    // TODO: User is not an owner of the note
+                                }
+                            }
+                        }
+                    }
+                }
+
+                notes = selectNotesByOwner(email) */
+                call.respond(HttpStatusCode.OK, notes)
             }
         }
     }
@@ -141,32 +186,35 @@ fun Route.notesRoute() {
                 }
 
                 val note = selectNoteById(request.id)
-                if (note != null) {
-                    if (note.owners.contains(email)) {
-                        if (note.owners.size > 1) {
-                            if (updateNoteOwners(note.id, note.owners - email)) {
-                                call.respond(
-                                    HttpStatusCode.OK, "Note successfully deleted for user with email = $email"
-                                )
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError, "Error updating note's owners")
-                            }
-                        } else {
-                            if (deleteNote(note.id)) {
-                                call.respond(HttpStatusCode.OK, "Note successfully deleted")
-                            } else {
-                                call.respond(HttpStatusCode.InternalServerError, "Error deleting note")
-                            }
-                        }
-                    } else {
-                        call.respond(
-                            HttpStatusCode.Forbidden, "User is not an owner of the note with id = ${request.id}"
-                        )
-                    }
-                } else {
-                    call.respond(HttpStatusCode.NotFound, "No note founded with id = ${request.id}")
-                }
+                val standardResponse = deleteNote(note, email)
+                call.respond(standardResponse.code, standardResponse.message)
             }
         }
+    }
+}
+
+private suspend fun deleteNote(note: Note?, email: String): StandardResponse {
+    if (note != null) {
+        if (note.owners.contains(email)) {
+            return if (note.owners.size > 1) {
+                if (updateNoteOwners(note.id, note.owners - email)) {
+                    StandardResponse(HttpStatusCode.OK, "Note successfully deleted")
+                } else {
+                    StandardResponse(HttpStatusCode.InternalServerError, "Error updating note's owners")
+                }
+            } else {
+                if (deleteNote(note.id)) {
+                    StandardResponse(HttpStatusCode.OK, "Note successfully deleted")
+                } else {
+                    StandardResponse(HttpStatusCode.InternalServerError, "Error deleting note")
+                }
+            }
+        } else {
+            return StandardResponse(
+                HttpStatusCode.Forbidden, "User is not an owner of the note"
+            )
+        }
+    } else {
+        return StandardResponse(HttpStatusCode.NotFound, "Note not founded")
     }
 }
