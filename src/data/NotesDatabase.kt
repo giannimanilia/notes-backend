@@ -60,6 +60,12 @@ suspend fun insertNote(note: Note): Boolean {
  */
 suspend fun updateNote(note: Note): Boolean {
     note.updateDate = System.currentTimeMillis()
+
+    val dbNote = selectNoteById(note.id)
+    if (dbNote != null) {
+        note.owners = (dbNote.owners + note.owners).distinct().toMutableList()
+    }
+
     return notesCollection.updateOneById(note.id, note).wasAcknowledged()
 }
 
