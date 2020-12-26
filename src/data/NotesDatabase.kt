@@ -63,7 +63,7 @@ suspend fun updateNote(note: Note): Boolean {
 
     val dbNote = selectNoteById(note.id)
     if (dbNote != null) {
-        note.owners = (dbNote.owners + note.owners).distinct().toMutableList()
+        note.owners = (dbNote.owners + note.owners).toMutableList()
     }
 
     return notesCollection.updateOneById(note.id, note).wasAcknowledged()

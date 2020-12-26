@@ -2,6 +2,7 @@ package com.gmaniliapp.route
 
 import com.gmaniliapp.data.*
 import com.gmaniliapp.data.collection.Note
+import com.gmaniliapp.data.request.AddOwnerRequest
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.ktor.application.*
@@ -75,7 +76,40 @@ fun Route.notesRoute() {
     route("/rest/v1/notes/{noteId}/owners") {
         authenticate {
             put {
-                // TODO: Implement
+                val noteId = call.parameters["noteId"]!!
+                val email = call.principal<UserIdPrincipal>()!!.name
+                val body = try {
+                    call.receive<AddOwnerRequest>()
+                } catch (exception: ContentTransformationException) {
+                    call.respond(HttpStatusCode.BadRequest, "Bad request")
+                    return@put
+                }
+
+                if (body.owner.isNotEmpty()) {
+                    val dbNote = selectNoteById(noteId)
+                    if (dbNote != null) {
+                        if (dbNote.owners.contains(email)) {
+                            if (!dbNote.owners.contains(body.owner)) {
+                                if (updateNoteOwners(noteId, dbNote.owners + body.owner)) {
+                                    call.respond(HttpStatusCode.OK, dbNote)
+                                } else {
+                                    call.respond(HttpStatusCode.InternalServerError, "Error updating note")
+                                }
+                            } else {
+                                call.respond(
+                                    HttpStatusCode.NotAcceptable,
+                                    "User is already an owner of the note with id = $noteId"
+                                )
+                            }
+                        } else {
+                            call.respond(HttpStatusCode.Forbidden, "User is not an owner of the note with id = $noteId")
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, "No note founded with id = $noteId")
+                    }
+                } else {
+                    call.respond(HttpStatusCode.BadRequest, "Owner is missing")
+                }
             }
         }
     }
