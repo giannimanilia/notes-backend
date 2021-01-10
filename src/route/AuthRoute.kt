@@ -6,6 +6,7 @@ import com.gmaniliapp.data.insertUser
 import com.gmaniliapp.data.request.AccountRequest
 import com.gmaniliapp.data.response.StandardResponse
 import com.gmaniliapp.service.login
+import com.gmaniliapp.util.SecurityUtil
 import io.ktor.application.*
 import io.ktor.features.ContentTransformationException
 import io.ktor.http.*
@@ -24,7 +25,7 @@ fun Route.authRoute() {
             }
 
             if (!checkIfUserExists(request.email)) {
-                if (insertUser(User(email = request.email, password = request.password))) {
+                if (insertUser(User(email = request.email, password = SecurityUtil.hash(request.password)))) {
                     call.respond(
                         HttpStatusCode.Created,
                         StandardResponse(HttpStatusCode.Created, "User successfully registered")
